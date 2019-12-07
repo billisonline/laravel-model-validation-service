@@ -10,7 +10,8 @@
         }
     ],
     "require": {
-        "php": ">=7.2.0"
+        "php": ">=7.2.0",
+        "laravel/framework": "^6.6"
     },
     "require-dev": {
         "phpunit/phpunit": "^7",
@@ -18,12 +19,13 @@
     },
     "autoload": {
         "psr-4": {
-            "BYanelli\\ProjectName\\" : "src/"
+            "BYanelli\\SelfValidatingModels\\" : "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "BYanelli\\ProjectName\\Tests\\" : "tests/"
+            "BYanelli\\SelfValidatingModels\\Tests\\" : "tests/",
+            "BYanelli\\SelfValidatingModels\\Tests\\TestApp\\" : "tests/app/"
         }
     },
     "scripts": {
