@@ -3,7 +3,7 @@
 namespace BYanelli\SelfValidatingModels;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Validation\Factory;
+use Illuminate\Contracts\Validation\Factory;
 
 /**
  * @mixin Model

@@ -64,5 +64,6 @@ class TestCase extends BaseTestCase
         $capsule->bootEloquent();
 
         $capsule->getConnection()->statement('create table posts (id integer primary key, title text, created_at timestamp , updated_at timestamp );');
+        $capsule->getConnection()->statement('create table comments (id integer primary key, body text, created_at timestamp , updated_at timestamp );');
     }
 }

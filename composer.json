@@ -3,6 +3,8 @@
     "description": "A description of the library",
     "license": "MIT",
     "type": "library",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "authors": [
         {
             "name": "Bill Yanelli",
@@ -11,7 +13,8 @@
     ],
     "require": {
         "php": ">=7.2.0",
-        "laravel/framework": "^6.6"
+        "laravel/framework": "^6.6",
+        "byanelli/support": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^7",
@@ -28,6 +31,12 @@
             "BYanelli\\SelfValidatingModels\\Tests\\TestApp\\" : "tests/app/"
         }
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/billisonline/byanelli-support"
+        }
+    ],
     "scripts": {
         "test": "./vendor/bin/phpunit"
     }
