@@ -2,13 +2,12 @@
 
 namespace BYanelli\SelfValidatingModels\Tests\TestApp;
 
-use BYanelli\SelfValidatingModels\HasValidationRules;
-use BYanelli\SelfValidatingModels\SelfValidates;
+use BYanelli\SelfValidatingModels\SelfValidatesWithRules;
 use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
-    use SelfValidates, HasValidationRules;
+    use SelfValidatesWithRules;
 
     public $rules = [
         'title' => 'required|string|max:20',

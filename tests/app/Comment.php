@@ -2,13 +2,12 @@
 
 namespace BYanelli\SelfValidatingModels\Tests\TestApp;
 
-use BYanelli\SelfValidatingModels\HasValidator;
-use BYanelli\SelfValidatingModels\SelfValidates;
+use BYanelli\SelfValidatingModels\SelfValidatesWithValidator;
 use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
 {
-    use SelfValidates, HasValidator;
+    use SelfValidatesWithValidator;
 
     protected $validator = CommentValidator::class;
 }
