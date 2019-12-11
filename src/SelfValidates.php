@@ -2,6 +2,7 @@
 
 namespace BYanelli\SelfValidatingModels;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -12,9 +13,13 @@ trait SelfValidates
     public static function bootSelfValidates()
     {
         static::saving(function (Model $model) {
-            $runner = app(ModelValidationRunner::class);
+            $validator = app()->call([$model, 'validator']);
 
-            $runner->validate($model);
+            if (!($validator instanceof Validator)) {
+                throw new \Exception;
+            }
+
+            $validator->validate();
         });
     }
 }

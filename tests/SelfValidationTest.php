@@ -4,6 +4,7 @@ namespace BYanelli\SelfValidatingModels\Tests;
 
 use BYanelli\SelfValidatingModels\Tests\TestApp\Comment;
 use BYanelli\SelfValidatingModels\Tests\TestApp\Post;
+use BYanelli\SelfValidatingModels\Tests\TestApp\User;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -18,6 +19,17 @@ class SelfValidationTest extends TestCase
         $post->title = Str::random(30);
 
         $post->save();
+    }
+
+    public function testSelfValidatesWithTraitAndRulesUnderAlternate()
+    {
+        $this->expectException(ValidationException::class);
+
+        $user = new User();
+
+        $user->email = 'invalid@email@!';
+
+        $user->save();
     }
 
     public function testValidModelAllowedWithTraitAndRules()

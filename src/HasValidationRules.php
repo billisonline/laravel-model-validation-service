@@ -10,11 +10,11 @@ use Illuminate\Contracts\Validation\Factory;
  */
 trait HasValidationRules
 {
-    public function validator()
+    public function validator(Factory $validatorFactory)
     {
-        /** @var Factory $validatorFactory */
-        $validatorFactory = app(Factory::class);
+        $data = $this->toArray();
+        $rules = $this->validationRules ?? $this->rules;
 
-        return $validatorFactory->make($this->toArray(), $this->rules);
+        return $validatorFactory->make($data, $rules);
     }
 }
