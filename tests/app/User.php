@@ -18,4 +18,14 @@ class User extends Model
     public $rules = [
         'email' => 'this_is_not_used|not_actual_validators'
     ];
+
+    // This property takes precedence (in case the name "messages" is taken by a database column, for example)
+    public $validationMessages = [
+        'email' => 'The :attribute isn\'t a valid email bro',
+    ];
+
+    // This has no effect when "validationMessages" is present
+    public $messages = [
+        'email' => 'zzz'
+    ];
 }

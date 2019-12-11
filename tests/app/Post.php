@@ -12,4 +12,8 @@ class Post extends Model
     public $rules = [
         'title' => 'required|string|max:20',
     ];
+
+    public $messages = [
+        'max' => 'The :attribute is too long bro',
+    ];
 }

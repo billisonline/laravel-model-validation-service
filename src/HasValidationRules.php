@@ -14,7 +14,8 @@ trait HasValidationRules
     {
         $data = $this->toArray();
         $rules = $this->validationRules ?? $this->rules;
+        $messages = $this->validationMessages ?? $this->messages ?? [];
 
-        return $validatorFactory->make($data, $rules);
+        return $validatorFactory->make($data, $rules, $messages);
     }
 }
