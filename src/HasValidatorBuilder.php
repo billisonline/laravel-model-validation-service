@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @mixin Model
  */
-trait HasValidator
+trait HasValidatorBuilder
 {
     public function validator()
     {

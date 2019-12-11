@@ -1,21 +1,69 @@
-# PHP Library Template
+# Laravel Self-Validating Models
 
-![](https://travis-ci.org/billisonline/php-library-template.svg?branch=master)
+![](https://travis-ci.org/billisonline/laravel-self-validating-models.svg?branch=master)
 
-Template PHP Library with Composer and PHPUnit
+Self-validating model classes for Laravel
 
 ## How to use
 
-To use, clone this repository, delete the ``.git`` directory, and ``git init`` to start your project with a fresh history.
+Self-validate using an array of rules by adding the `SelfValidatesWithRules` trait and a `$rules` array to the class. An optional `$messages` array can be provided to supply custom messages.
 
-This repository provides these files as samples:
-- .gitattributes
-- .gitignore
-- composer.json 
-- phpunit.xml.dist
-- README.md
+```php
+<?php
 
-The repository also contains a ``src`` directory for autoloaded classes and a ``tests`` directory structure with sample test.
+use BYanelli\SelfValidatingModels\SelfValidatesWithRules;
+use Illuminate\Database\Eloquent\Model;
+
+class Post extends Model
+{
+    use SelfValidatesWithRules;
+
+    public $rules = [
+        'title' => 'required|string|max:20',
+    ];
+
+    public $messages = [
+        'max' => 'The :attribute is too long bro',
+    ];
+}
+```
+
+Self-validate using a custom validator builder by adding the `SelfValidatesWithBuilder` trait and specifying the `$validator` property, which should point to a class that implements the `Validatorable` interface.
+
+Comment.php:
+```php
+<?php
+
+use BYanelli\SelfValidatingModels\SelfValidatesWithBuilder;
+use Illuminate\Database\Eloquent\Model;
+
+class Comment extends Model
+{
+    use SelfValidatesWithBuilder;
+
+    protected $validator = CommentValidator::class;
+}
+```
+
+CommentValidator.php:
+```php
+<?php
+
+use BYanelli\Support\Validatorable;
+use Illuminate\Contracts\Validation\Validator;
+
+class CommentValidator implements Validatorable
+{
+    //...implement setData() and setObject()
+
+    public function toValidator(): Validator
+    {
+        return $this->validatorFactory->make($this->data, [
+            'body' => 'string|required|max:255'
+        ]);
+    }
+}
+```
 
 ## How to test
 
