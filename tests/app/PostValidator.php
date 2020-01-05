@@ -20,11 +20,20 @@ class PostValidator extends ModelValidatorBuilder
             // Post may be created without body, but must include one when published
             ->addRulesWhenPublished([
                 'body' => 'string|required|max:800',
+            ])
+            // Reason must be specified when unpublishing
+            ->addRulesWhenUnpublishing([
+                'unpublish_reason' => 'string|required'
             ]);
     }
 
     protected function addRulesWhenPublished(array $rules)
     {
         return $this->addRulesWhen($this->post->published, $rules);
+    }
+
+    protected function addRulesWhenUnpublishing(array $rules)
+    {
+        return $this->addRulesWhen($this->updatingFromTo(['published' => [true, false]]), $rules);
     }
 }

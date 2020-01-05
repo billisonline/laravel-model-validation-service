@@ -40,6 +40,16 @@ abstract class ModelValidatorBuilder implements Validatorable
     private $conditionalRulesets;
 
     /**
+     * @var bool
+     */
+    private $creating;
+
+    /**
+     * @var bool
+     */
+    private $updating;
+
+    /**
      * @param Model $model
      * @return $this
      * @throws Exception
@@ -116,7 +126,7 @@ abstract class ModelValidatorBuilder implements Validatorable
     }
 
     /**
-     * @param $condition
+     * @param bool|callable $condition
      * @param array $rules
      * @return $this
      */
@@ -141,13 +151,16 @@ abstract class ModelValidatorBuilder implements Validatorable
         return $condition;
     }
 
-    private function setModel(Model $model)
+    private function setModel(Model $model): void
     {
         $this->model = $model;
 
         $camelCaseName = Str::camel(class_basename($model));
 
         $this->{$camelCaseName} = $model;
+
+        $this->creating = !$this->model->exists;
+        $this->updating = $this->model->exists;
     }
 
     /**
@@ -167,5 +180,54 @@ abstract class ModelValidatorBuilder implements Validatorable
         }
 
         return array_merge_recursive($existing, $response->rules);
+    }
+
+    protected function updating(...$attributes): bool
+    {
+        return $this->updating && $this->model->isDirty($attributes);
+    }
+
+    protected function updatingFrom(array $attributes)
+    {
+        if (!$this->updating(...array_keys($attributes))) {
+            return false;
+        }
+
+        foreach ($attributes as $name => $val) {
+            if ($this->model->getOriginal($name) !== $val) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function updatingTo(array $attributes)
+    {
+        if (!$this->updating(...array_keys($attributes))) {
+            return false;
+        }
+
+        foreach ($attributes as $name => $val) {
+            if ($this->model->{$name} !== $val) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function updatingFromTo(array $attributes): bool
+    {
+        foreach ($attributes as $name => [$from, $to]) {
+            if (
+                !$this->updatingFrom([$name => $from])
+                || !$this->updatingTo([$name => $to])
+            ) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

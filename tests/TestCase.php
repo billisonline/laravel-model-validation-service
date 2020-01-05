@@ -71,7 +71,7 @@ class TestCase extends BaseTestCase
         (new ModelValidationServiceProvider($app))->register();
 
         collect([
-            'create table posts (id integer primary key, title text, body text, published integer, created_at timestamp , updated_at timestamp );',
+            'create table posts (id integer primary key, title text, body text, unpublish_reason text, published integer, created_at timestamp , updated_at timestamp );',
         ])
             ->each(function (string $statement) use ($capsule) {
                 $capsule->getConnection()->statement($statement);
