@@ -3,9 +3,14 @@
 namespace BYanelli\SelfValidatingModels;
 
 use BYanelli\Support\Validatorable;
+use Exception;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Validation\Factory as ValidatorFactory; //todo: use contract
+use Illuminate\Support\Str;
+use Illuminate\Validation\Factory as ValidatorFactory;
+use Illuminate\Validation\ValidationRuleParser;
+
+//todo: use contract
 
 abstract class ModelValidatorBuilder implements Validatorable
 {
@@ -30,18 +35,22 @@ abstract class ModelValidatorBuilder implements Validatorable
     private $rulesets;
 
     /**
+     * @var array
+     */
+    private $conditionalRulesets;
+
+    /**
      * @param Model $model
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function setObject($model): Validatorable
     {
         if (!($model instanceof Model)) {
-            throw new \Exception;
+            throw new Exception;
         }
 
-        $this->model = $model;
-
+        $this->setModel($model);
         $this->setData($model->toArray());
 
         return $this;
@@ -76,19 +85,19 @@ abstract class ModelValidatorBuilder implements Validatorable
         $rules = [];
 
         foreach ($this->rulesets as $ruleset) {
-            $rules = array_merge($rules, $ruleset);
+            $rules = $this->mergeRules($rules, $ruleset);
         }
 
         /** @var Validator $validator */
         $validator = $this->validatorFactory->make($this->data, $rules);
 
-        /*foreach ($this->conditionalRulesets as $item) {
+        foreach ($this->conditionalRulesets as $item) {
             [$condition, $ruleset] = [$item['condition'], $item['ruleset']];
 
             foreach ($ruleset as $attribute => $rules) {
                 $validator->sometimes($attribute, $rules, $condition);
             }
-        }*/
+        }
 
         return $validator;
     }
@@ -104,5 +113,59 @@ abstract class ModelValidatorBuilder implements Validatorable
         $this->rulesets[] = $rules;
 
         return $this;
+    }
+
+    /**
+     * @param $condition
+     * @param array $rules
+     * @return $this
+     */
+    protected function addRulesWhen($condition, array $rules): self
+    {
+        $this->conditionalRulesets[] = [
+            'condition' => $this->wrapCondition($condition),
+            'ruleset'   => $rules,
+        ];
+
+        return $this;
+    }
+
+    private function wrapCondition($condition): callable
+    {
+        if (!is_callable($condition)) {
+            return function () use ($condition): bool {
+                return boolval($condition);
+            };
+        }
+
+        return $condition;
+    }
+
+    private function setModel(Model $model)
+    {
+        $this->model = $model;
+
+        $camelCaseName = Str::camel(class_basename($model));
+
+        $this->{$camelCaseName} = $model;
+    }
+
+    /**
+     * @see \Illuminate\Validation\Validator::addRules()
+     *
+     * @param array $existing
+     * @param array $new
+     * @return array
+     * @throws Exception
+     */
+    public function mergeRules(array $existing, array $new): array
+    {
+        $response = (new ValidationRuleParser($this->data))->explode($new);
+
+        if (!empty($response->implicitAttributes ?? [])) {
+            throw new Exception('Implicit attributes not supported yet');
+        }
+
+        return array_merge_recursive($existing, $response->rules);
     }
 }

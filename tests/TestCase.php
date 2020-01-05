@@ -2,6 +2,8 @@
 
 namespace BYanelli\SelfValidatingModels\Tests;
 
+use BYanelli\SelfValidatingModels\Tests\Support\ExpectsCustomExceptions;
+use BYanelli\SelfValidatingModels\Tests\Support\ExpectsValidationExceptions;
 use BYanelli\SelfValidatingModels\Tests\TestApp\ModelValidationServiceProvider;
 use Illuminate\Config\Repository;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -15,6 +17,8 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
+    use ExpectsCustomExceptions, ExpectsValidationExceptions;
+
     /**
      * @var Application|null
      */
@@ -67,7 +71,7 @@ class TestCase extends BaseTestCase
         (new ModelValidationServiceProvider($app))->register();
 
         collect([
-            'create table posts (id integer primary key, title text, created_at timestamp , updated_at timestamp );',
+            'create table posts (id integer primary key, title text, body text, published integer, created_at timestamp , updated_at timestamp );',
         ])
             ->each(function (string $statement) use ($capsule) {
                 $capsule->getConnection()->statement($statement);
