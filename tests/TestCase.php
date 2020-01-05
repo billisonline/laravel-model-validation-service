@@ -2,6 +2,7 @@
 
 namespace BYanelli\SelfValidatingModels\Tests;
 
+use BYanelli\SelfValidatingModels\Tests\TestApp\ModelValidationServiceProvider;
 use Illuminate\Config\Repository;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Events\EventServiceProvider;
@@ -63,10 +64,10 @@ class TestCase extends BaseTestCase
 
         $capsule->bootEloquent();
 
+        (new ModelValidationServiceProvider($app))->register();
+
         collect([
             'create table posts (id integer primary key, title text, created_at timestamp , updated_at timestamp );',
-            'create table comments (id integer primary key, body text, created_at timestamp , updated_at timestamp );',
-            'create table users (id integer primary key, email text, created_at timestamp , updated_at timestamp );',
         ])
             ->each(function (string $statement) use ($capsule) {
                 $capsule->getConnection()->statement($statement);
