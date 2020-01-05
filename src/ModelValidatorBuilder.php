@@ -50,6 +50,11 @@ abstract class ModelValidatorBuilder implements Validatorable
     private $updating;
 
     /**
+     * @var bool
+     */
+    private $deleting;
+
+    /**
      * @param Model $model
      * @return $this
      * @throws Exception
@@ -161,6 +166,23 @@ abstract class ModelValidatorBuilder implements Validatorable
 
         $this->creating = !$this->model->exists;
         $this->updating = $this->model->exists;
+        $this->deleting = false;
+    }
+
+    /**
+     * @param bool $deleting
+     * @return $this
+     */
+    public function setDeleting(bool $deleting): self
+    {
+        $this->deleting = $deleting;
+
+        if ($deleting) {
+            $this->creating = false;
+            $this->updating = false;
+        }
+
+        return $this;
     }
 
     /**
@@ -229,5 +251,25 @@ abstract class ModelValidatorBuilder implements Validatorable
         }
 
         return true;
+    }
+
+    protected function addRulesWhenSaving(array $rules)
+    {
+        return $this->addRulesWhen($this->creating || $this->updating, $rules);
+    }
+
+    protected function addRulesWhenCreating(array $rules)
+    {
+        return $this->addRulesWhen($this->updating, $rules);
+    }
+
+    protected function addRulesWhenUpdating(array $rules)
+    {
+        return $this->addRulesWhen($this->updating, $rules);
+    }
+
+    protected function addRulesWhenDeleting(array $rules)
+    {
+        return $this->addRulesWhen($this->deleting, $rules);
     }
 }

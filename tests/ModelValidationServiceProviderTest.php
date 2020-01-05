@@ -24,6 +24,7 @@ class ModelValidationServiceProviderTest extends TestCase
         $post = new Post();
         $post->title = Str::random(100);
         $post->published = true;
+        $post->protected = true;
 
         $post->save();
     }
@@ -32,8 +33,9 @@ class ModelValidationServiceProviderTest extends TestCase
     {
         $post = new Post();
         $post->title = Str::random(100);
-        $post->published = true;
         $post->body = Str::random(100);
+        $post->published = true;
+        $post->protected = true;
 
         $post->save();
 
@@ -48,6 +50,8 @@ class ModelValidationServiceProviderTest extends TestCase
         $post->title = Str::random(100);
         $post->body = Str::random(100);
         $post->published = true;
+        $post->protected = true;
+
 
         $post->save();
 
@@ -64,6 +68,7 @@ class ModelValidationServiceProviderTest extends TestCase
         $post->title = Str::random(100);
         $post->body = Str::random(100);
         $post->published = true;
+        $post->protected = true;
 
         $post->save();
 
@@ -71,9 +76,40 @@ class ModelValidationServiceProviderTest extends TestCase
 
         $post->published = false;
         $post->unpublish_reason = 'zzz';
+        $post->save();
+
+        $this->assertFalse($post->fresh()->published);
+    }
+
+    public function testValidationFailsWhenDeletingRulesViolated()
+    {
+        $this->expectValidationErrors(['protected' => 'validation.in']);
+
+        $post = new Post();
+        $post->title = Str::random(100);
+        $post->body = Str::random(100);
+        $post->protected = true;
 
         $post->save();
 
         $this->assertTrue($post->exists);
+
+        $post->delete();
+    }
+
+    public function testValidationSucceedsWhenDeletingRulesFollowed()
+    {
+        $post = new Post();
+        $post->title = Str::random(100);
+        $post->body = Str::random(100);
+        $post->protected = false;
+
+        $post->save();
+
+        $this->assertTrue($post->exists);
+
+        $post->delete();
+
+        $this->assertFalse($post->exists);
     }
 }

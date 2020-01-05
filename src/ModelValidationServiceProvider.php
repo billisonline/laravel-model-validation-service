@@ -41,6 +41,19 @@ class ModelValidationServiceProvider extends ServiceProvider
 
                 $validator->validate();
             });
+
+            $modelClass::deleting(function (Model $model) use ($validatorBuilderClass) {
+                /** @var Validatorable $validatorBuilder */
+                $validatorBuilder = $this->app->make($validatorBuilderClass);
+
+                $validatorBuilder->setObject($model);
+
+                if ($validatorBuilder instanceof ModelValidatorBuilder) {
+                    $validatorBuilder->setDeleting(true);
+                }
+
+                $validatorBuilder->toValidator()->validate();
+            });
         }
     }
 }

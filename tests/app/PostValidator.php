@@ -3,6 +3,7 @@
 namespace BYanelli\SelfValidatingModels\Tests\TestApp;
 
 use BYanelli\SelfValidatingModels\ModelValidatorBuilder;
+use Illuminate\Validation\Rule;
 
 class PostValidator extends ModelValidatorBuilder
 {
@@ -24,6 +25,10 @@ class PostValidator extends ModelValidatorBuilder
             // Reason must be specified when unpublishing
             ->addRulesWhenUnpublishing([
                 'unpublish_reason' => 'string|required'
+            ])
+            // Protected posts cannot be deleted
+            ->addRulesWhenDeleting([
+                'protected' => Rule::in(false)
             ]);
     }
 
