@@ -17,7 +17,7 @@ class ModelValidationServiceProviderTest extends TestCase
         $post->save();
     }
 
-    public function testValidationFailsWhenConditionalRulesViolated()
+    public function testValidationFailsWhenSavingRulesViolated()
     {
         $this->expectValidationErrors(['body' => 'validation.required']);
 
@@ -29,7 +29,7 @@ class ModelValidationServiceProviderTest extends TestCase
         $post->save();
     }
 
-    public function testValidationSucceedsWhenConditionalRulesFollowed()
+    public function testValidationSucceedsWhenSavingRulesFollowed()
     {
         $post = new Post();
         $post->title = Str::random(100);
@@ -111,5 +111,18 @@ class ModelValidationServiceProviderTest extends TestCase
         $post->delete();
 
         $this->assertFalse($post->exists);
+    }
+
+    public function testValidationFailsWhenCreatingRulesViolated()
+    {
+        $this->expectValidationErrors(['unpublish_reason' => 'validation.empty']);
+
+        $post = new Post();
+        $post->title = Str::random(100);
+        $post->body = Str::random(100);
+        $post->protected = true;
+        $post->unpublish_reason = 'zzz';
+
+        $post->save();
     }
 }

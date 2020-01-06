@@ -15,8 +15,11 @@ class PostValidator extends ModelValidatorBuilder
     protected function build(): void
     {
         $this
-            ->addRules([
+            ->addRulesWhenSaving([
                 'title' => 'string|required|max:255',
+            ])
+            ->addRulesWhenCreating([
+                'unpublish_reason' => 'empty'
             ])
             // Post may be created without body, but must include one when published
             ->addRulesWhenPublished([
@@ -34,11 +37,14 @@ class PostValidator extends ModelValidatorBuilder
 
     protected function addRulesWhenPublished(array $rules)
     {
-        return $this->addRulesWhen($this->post->published, $rules);
+        return $this->addRulesWhenSavingAnd($this->post->published, $rules);
     }
 
     protected function addRulesWhenUnpublishing(array $rules)
     {
-        return $this->addRulesWhen($this->updatingFromTo(['published' => [true, false]]), $rules);
+        return $this->addRulesWhenUpdatingAnd(
+            $this->updatingFromTo(['published' => [true, false]]),
+            $rules
+        );
     }
 }

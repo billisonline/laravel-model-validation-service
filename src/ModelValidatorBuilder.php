@@ -32,7 +32,7 @@ abstract class ModelValidatorBuilder implements Validatorable
     /**
      * @var array
      */
-    private $rulesets;
+    private $rulesets = [];
 
     /**
      * @var array
@@ -185,6 +185,17 @@ abstract class ModelValidatorBuilder implements Validatorable
         return $this;
     }
 
+    protected function saving(): bool
+    {
+        return ($this->creating || $this->updating);
+    }
+
+    //todo?
+    /*protected function modifying(): bool
+    {
+        return ($this->updating || $this->deleting);
+    }*/
+
     /**
      * @see \Illuminate\Validation\Validator::addRules()
      *
@@ -204,14 +215,14 @@ abstract class ModelValidatorBuilder implements Validatorable
         return array_merge_recursive($existing, $response->rules);
     }
 
-    protected function updating(...$attributes): bool
+    protected function updatingAttributes(...$attributes): bool
     {
         return $this->updating && $this->model->isDirty($attributes);
     }
 
     protected function updatingFrom(array $attributes)
     {
-        if (!$this->updating(...array_keys($attributes))) {
+        if (!$this->updatingAttributes(...array_keys($attributes))) {
             return false;
         }
 
@@ -226,7 +237,7 @@ abstract class ModelValidatorBuilder implements Validatorable
 
     protected function updatingTo(array $attributes)
     {
-        if (!$this->updating(...array_keys($attributes))) {
+        if (!$this->updatingAttributes(...array_keys($attributes))) {
             return false;
         }
 
@@ -253,23 +264,61 @@ abstract class ModelValidatorBuilder implements Validatorable
         return true;
     }
 
+    protected function evaluateCondition($condition, array $arguments): bool
+    {
+        return boolval(is_callable($condition)? $condition(...$arguments) : $condition);
+    }
+
+    protected function addRulesWhenStateAnd(bool $state, $andCondition, array $rules)
+    {
+        return $this->addRulesWhen(
+            function () use ($state, $andCondition) {
+                return (
+                    $state
+                    && $this->evaluateCondition($andCondition, func_get_args())
+                );
+            },
+            $rules
+        );
+    }
+
+    protected function addRulesWhenSavingAnd($condition, array $rules)
+    {
+        return $this->addRulesWhenStateAnd($this->saving(), $condition, $rules);
+    }
+
+    protected function addRulesWhenCreatingAnd($condition, array $rules)
+    {
+        return $this->addRulesWhenStateAnd($this->creating, $condition, $rules);
+    }
+
+    protected function addRulesWhenUpdatingAnd($condition, array $rules)
+    {
+        return $this->addRulesWhenStateAnd($this->updating, $condition, $rules);
+    }
+
+    protected function addRulesWhenDeletingAnd($condition, array $rules)
+    {
+        return $this->addRulesWhenStateAnd($this->deleting, $condition, $rules);
+    }
+
     protected function addRulesWhenSaving(array $rules)
     {
-        return $this->addRulesWhen($this->creating || $this->updating, $rules);
+        return $this->addRulesWhenSavingAnd(true, $rules);
     }
 
     protected function addRulesWhenCreating(array $rules)
     {
-        return $this->addRulesWhen($this->updating, $rules);
+        return $this->addRulesWhenCreatingAnd(true, $rules);
     }
 
     protected function addRulesWhenUpdating(array $rules)
     {
-        return $this->addRulesWhen($this->updating, $rules);
+        return $this->addRulesWhenUpdatingAnd(true, $rules);
     }
 
     protected function addRulesWhenDeleting(array $rules)
     {
-        return $this->addRulesWhen($this->deleting, $rules);
+        return $this->addRulesWhenDeletingAnd(true, $rules);
     }
 }
