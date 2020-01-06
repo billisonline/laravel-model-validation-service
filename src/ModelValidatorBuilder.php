@@ -135,7 +135,7 @@ abstract class ModelValidatorBuilder implements Validatorable
      * @param array $rules
      * @return $this
      */
-    protected function addRulesWhen($condition, array $rules): self
+    protected function when($condition, array $rules): self
     {
         $this->conditionalRulesets[] = [
             'condition' => $this->wrapCondition($condition),
@@ -204,7 +204,7 @@ abstract class ModelValidatorBuilder implements Validatorable
      * @return array
      * @throws Exception
      */
-    public function mergeRules(array $existing, array $new): array
+    protected function mergeRules(array $existing, array $new): array
     {
         $response = (new ValidationRuleParser($this->data))->explode($new);
 
@@ -250,7 +250,7 @@ abstract class ModelValidatorBuilder implements Validatorable
         return true;
     }
 
-    public function updatingFromTo(array $attributes): bool
+    protected function updatingFromTo(array $attributes): bool
     {
         foreach ($attributes as $name => [$from, $to]) {
             if (
@@ -264,14 +264,14 @@ abstract class ModelValidatorBuilder implements Validatorable
         return true;
     }
 
-    protected function evaluateCondition($condition, array $arguments): bool
+    private function evaluateCondition($condition, array $arguments): bool
     {
         return boolval(is_callable($condition)? $condition(...$arguments) : $condition);
     }
 
-    protected function addRulesWhenStateAnd(bool $state, $andCondition, array $rules)
+    private function whenStateAnd(bool $state, $andCondition, array $rules)
     {
-        return $this->addRulesWhen(
+        return $this->when(
             function () use ($state, $andCondition) {
                 return (
                     $state
@@ -282,43 +282,43 @@ abstract class ModelValidatorBuilder implements Validatorable
         );
     }
 
-    protected function addRulesWhenSavingAnd($condition, array $rules)
+    protected function whenSavingAnd($condition, array $rules)
     {
-        return $this->addRulesWhenStateAnd($this->saving(), $condition, $rules);
+        return $this->whenStateAnd($this->saving(), $condition, $rules);
     }
 
-    protected function addRulesWhenCreatingAnd($condition, array $rules)
+    protected function whenCreatingAnd($condition, array $rules)
     {
-        return $this->addRulesWhenStateAnd($this->creating, $condition, $rules);
+        return $this->whenStateAnd($this->creating, $condition, $rules);
     }
 
-    protected function addRulesWhenUpdatingAnd($condition, array $rules)
+    protected function whenUpdatingAnd($condition, array $rules)
     {
-        return $this->addRulesWhenStateAnd($this->updating, $condition, $rules);
+        return $this->whenStateAnd($this->updating, $condition, $rules);
     }
 
-    protected function addRulesWhenDeletingAnd($condition, array $rules)
+    protected function whenDeletingAnd($condition, array $rules)
     {
-        return $this->addRulesWhenStateAnd($this->deleting, $condition, $rules);
+        return $this->whenStateAnd($this->deleting, $condition, $rules);
     }
 
-    protected function addRulesWhenSaving(array $rules)
+    protected function whenSaving(array $rules)
     {
-        return $this->addRulesWhenSavingAnd(true, $rules);
+        return $this->whenSavingAnd(true, $rules);
     }
 
-    protected function addRulesWhenCreating(array $rules)
+    protected function whenCreating(array $rules)
     {
-        return $this->addRulesWhenCreatingAnd(true, $rules);
+        return $this->whenCreatingAnd(true, $rules);
     }
 
-    protected function addRulesWhenUpdating(array $rules)
+    protected function whenUpdating(array $rules)
     {
-        return $this->addRulesWhenUpdatingAnd(true, $rules);
+        return $this->whenUpdatingAnd(true, $rules);
     }
 
-    protected function addRulesWhenDeleting(array $rules)
+    protected function whenDeleting(array $rules)
     {
-        return $this->addRulesWhenDeletingAnd(true, $rules);
+        return $this->whenDeletingAnd(true, $rules);
     }
 }

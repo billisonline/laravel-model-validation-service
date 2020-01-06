@@ -115,7 +115,7 @@ class ModelValidationServiceProviderTest extends TestCase
 
     public function testValidationFailsWhenCreatingRulesViolated()
     {
-        $this->expectValidationErrors(['unpublish_reason' => 'validation.empty']);
+        $this->expectValidationErrors(['unpublish_reason' => 'validation.in']);
 
         $post = new Post();
         $post->title = Str::random(100);

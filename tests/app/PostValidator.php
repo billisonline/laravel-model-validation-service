@@ -15,34 +15,36 @@ class PostValidator extends ModelValidatorBuilder
     protected function build(): void
     {
         $this
-            ->addRulesWhenSaving([
+            // Baseline rules on every create/update
+            ->whenSaving([
                 'title' => 'string|required|max:255',
             ])
-            ->addRulesWhenCreating([
-                'unpublish_reason' => 'empty'
+            // Unpublish reason cannot be set yet when creating
+            ->whenCreating([
+                'unpublish_reason' => Rule::in(null, '')
             ])
             // Post may be created without body, but must include one when published
-            ->addRulesWhenPublished([
+            ->whenPublished([
                 'body' => 'string|required|max:800',
             ])
             // Reason must be specified when unpublishing
-            ->addRulesWhenUnpublishing([
+            ->whenUnpublishing([
                 'unpublish_reason' => 'string|required'
             ])
             // Protected posts cannot be deleted
-            ->addRulesWhenDeleting([
+            ->whenDeleting([
                 'protected' => Rule::in(false)
             ]);
     }
 
-    protected function addRulesWhenPublished(array $rules)
+    protected function whenPublished(array $rules)
     {
-        return $this->addRulesWhenSavingAnd($this->post->published, $rules);
+        return $this->whenSavingAnd($this->post->published, $rules);
     }
 
-    protected function addRulesWhenUnpublishing(array $rules)
+    protected function whenUnpublishing(array $rules)
     {
-        return $this->addRulesWhenUpdatingAnd(
+        return $this->whenUpdatingAnd(
             $this->updatingFromTo(['published' => [true, false]]),
             $rules
         );
