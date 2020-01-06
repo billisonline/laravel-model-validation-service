@@ -1,5 +1,5 @@
 {
-    "name": "vendor/project",
+    "name": "byanelli/laravel-model-validation-service",
     "description": "A description of the library",
     "license": "MIT",
     "type": "library",
