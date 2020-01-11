@@ -14,10 +14,13 @@ class ModelValidationServiceProvider extends ServiceProvider
         //
     ];
 
-    public function register()
+    public function boot()
     {
-        parent::register();
+        $this->registerValidators();
+    }
 
+    public function registerValidators()
+    {
         $this->app->resolving(Validatorable::class, function (Validatorable $validatorable, Container $app) {
             $validatorable->setFactory($app->make(ValidatorFactory::class));
         });

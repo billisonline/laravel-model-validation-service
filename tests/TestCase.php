@@ -11,6 +11,7 @@ use Illuminate\Events\EventServiceProvider;
 use Illuminate\Filesystem\FilesystemServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Queue\QueueServiceProvider;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Translation\TranslationServiceProvider;
 use Illuminate\Validation\ValidationServiceProvider;
 use PHPUnit\Framework\TestCase as BaseTestCase;
@@ -35,11 +36,13 @@ class TestCase extends BaseTestCase
         $app->instance('config', $config = new Repository([]));
         $app->instance('path.lang', __DIR__.'/resources/lang');
 
-        (new TranslationServiceProvider($app))->register();
-        (new ValidationServiceProvider($app))->register();
-        (new FilesystemServiceProvider($app))->register();
-        (new QueueServiceProvider($app))->register();
-        (new EventServiceProvider($app))->register();
+        $this->registerAndBootServiceProviders($app, [
+            TranslationServiceProvider::class,
+            ValidationServiceProvider::class,
+            FilesystemServiceProvider::class,
+            QueueServiceProvider::class,
+            EventServiceProvider::class,
+        ]);
 
         return (self::$app = $app);
     }
@@ -68,13 +71,33 @@ class TestCase extends BaseTestCase
 
         $capsule->bootEloquent();
 
-        (new ModelValidationServiceProvider($app))->register();
+        $this->registerAndBootServiceProviders($app, [ModelValidationServiceProvider::class]);
 
         collect([
             'create table posts (id integer primary key, title text, body text, unpublish_reason text, protected integer, published integer, created_at timestamp , updated_at timestamp );',
         ])
             ->each(function (string $statement) use ($capsule) {
                 $capsule->getConnection()->statement($statement);
+            });
+    }
+
+    /**
+     * @param Application $app
+     * @param string[]|ServiceProvider[]|array $providers
+     */
+    private function registerAndBootServiceProviders(Application $app, array $providers): void
+    {
+        collect($providers)
+            ->map(function (string $provider) use ($app): ServiceProvider {
+                return new $provider($app);
+            })
+            ->each(function (ServiceProvider $provider) {
+                $provider->register();
+            })
+            ->each(function (ServiceProvider $provider) {
+                if (method_exists($provider, 'boot')) {
+                    $provider->boot();
+                }
             });
     }
 }
