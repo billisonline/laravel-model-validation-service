@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 class ModelValidationServiceProviderTest extends TestCase
 {
-    public function testValidatesWithServiceProvider()
+    public function testValidationSucceedsWhenCreatingRulesFollowed()
     {
         $this->expectValidationErrors(['title' => 'validation.max.string']);
 
@@ -17,14 +17,15 @@ class ModelValidationServiceProviderTest extends TestCase
         $post->save();
     }
 
-    public function testValidationFailsWhenSavingRulesViolated()
+    public function testValidationFailsWhenCreatingRulesViolated()
     {
-        $this->expectValidationErrors(['body' => 'validation.required']);
+        $this->expectValidationErrors(['unpublish_reason' => 'validation.in']);
 
         $post = new Post();
         $post->title = Str::random(100);
-        $post->published = true;
+        $post->body = Str::random(100);
         $post->protected = true;
+        $post->unpublish_reason = 'zzz';
 
         $post->save();
     }
@@ -42,22 +43,14 @@ class ModelValidationServiceProviderTest extends TestCase
         $this->assertTrue($post->exists);
     }
 
-    public function testValidationFailsWhenUpdatingRulesViolated()
+    public function testValidationFailsWhenSavingRulesViolated()
     {
-        $this->expectValidationErrors(['unpublish_reason' => 'validation.required']);
+        $this->expectValidationErrors(['body' => 'validation.required']);
 
         $post = new Post();
         $post->title = Str::random(100);
-        $post->body = Str::random(100);
         $post->published = true;
         $post->protected = true;
-
-
-        $post->save();
-
-        $this->assertTrue($post->exists);
-
-        $post->published = false;
 
         $post->save();
     }
@@ -81,20 +74,23 @@ class ModelValidationServiceProviderTest extends TestCase
         $this->assertFalse($post->fresh()->published);
     }
 
-    public function testValidationFailsWhenDeletingRulesViolated()
+    public function testValidationFailsWhenUpdatingRulesViolated()
     {
-        $this->expectValidationErrors(['protected' => 'validation.in']);
+        $this->expectValidationErrors(['unpublish_reason' => 'validation.required']);
 
         $post = new Post();
         $post->title = Str::random(100);
         $post->body = Str::random(100);
+        $post->published = true;
         $post->protected = true;
 
         $post->save();
 
         $this->assertTrue($post->exists);
 
-        $post->delete();
+        $post->published = false;
+
+        $post->save();
     }
 
     public function testValidationSucceedsWhenDeletingRulesFollowed()
@@ -113,16 +109,19 @@ class ModelValidationServiceProviderTest extends TestCase
         $this->assertFalse($post->exists);
     }
 
-    public function testValidationFailsWhenCreatingRulesViolated()
+    public function testValidationFailsWhenDeletingRulesViolated()
     {
-        $this->expectValidationErrors(['unpublish_reason' => 'validation.in']);
+        $this->expectValidationErrors(['protected' => 'validation.in']);
 
         $post = new Post();
         $post->title = Str::random(100);
         $post->body = Str::random(100);
         $post->protected = true;
-        $post->unpublish_reason = 'zzz';
 
         $post->save();
+
+        $this->assertTrue($post->exists);
+
+        $post->delete();
     }
 }
